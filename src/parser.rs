@@ -3,6 +3,7 @@ use crate::{
     patterns::PHONETIC_PATTERNS,
 };
 use std::collections::BTreeMap;
+use wasm_bindgen::prelude::*;
 
 fn conditional_lowercase(c: char) -> char {
     const CASE_SENSITIVE_CHARS: &str = "oiudgjnrstyz";
@@ -54,6 +55,7 @@ fn does_match(_match: &Match, prefix: char, suffix: char) -> bool {
     }
 }
 
+#[wasm_bindgen]
 pub struct Parser {
     patterns: BTreeMap<&'static str, &'static Pattern>,
 }
@@ -105,6 +107,22 @@ impl Parser {
             .range(..=input)
             .rfind(|(&k, _)| input.starts_with(k))
             .map(|(_, &p)| p)
+    }
+}
+
+#[wasm_bindgen]
+impl Parser {
+    #[wasm_bindgen(constructor)]
+    pub fn wasm_new_phonetic() -> Parser {
+        #[cfg(feature = "console_error_panic_hook")]
+        console_error_panic_hook::set_once();
+
+        Self::new_phonetic()
+    }
+
+    #[wasm_bindgen(js_name = convert)]
+    pub fn wasm_convert(&self, raw_input: &str) -> String {
+        self.convert(&raw_input)
     }
 }
 
